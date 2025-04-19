@@ -5,40 +5,41 @@ import Sidebar from '../components/Sidebar';
 import ChatWindow from '../components/ChatWindow';
 import EmptyChat from '../components/EmptyChat';
 import { useAuth } from '../contexts/AuthContext';
-import { LogOut } from 'lucide-react';
-import { useTheme } from '../contexts/ThemeContext'; // Import the useTheme hook
-import { Moon, Sun } from 'lucide-react'; // Import moon and sun icons for dark/light mode toggle
 
 const ChatPage: React.FC = () => {
-  const { logout, user } = useAuth();
+  const { logout } = useAuth();
   const navigate = useNavigate();
-  const { theme, toggleTheme } = useTheme(); // Get theme and toggleTheme function
+
+  useEffect(() => {
+    document.title = 'FOREVER';
+  }, []);
+
+  
 
   const handleLogout = () => {
     logout();
     navigate('/login');
   };
 
-  useEffect(() => {
-    document.title = 'FOREVER';
-  }, []);
-
   return (
     <ChatProvider>
-      <div className={`flex h-screen overflow-hidden bg-gradient-to-br from-gray-50 via-white to-gray-100 dark:from-gray-900 dark:to-gray-800 transition-colors duration-300`}>
-        <div className="w-full flex flex-col md:flex-row">
-          
-          {/* Sidebar */}
-          <Sidebar onLogout={handleLogout} />
+      <div className={`relative min-h-screen flex flex-col md:flex-row bg-gradient-to-br from-gray-50 via-white to-gray-100 dark:from-gray-900 dark:to-gray-800 transition-colors duration-300`}>
 
-          {/* Main Chat Area */}
-          <div className="flex-1 flex flex-col h-full overflow-hidden bg-white dark:bg-gray-950 shadow-inner rounded-tl-2xl md:rounded-none transition-all duration-300">
-            <Routes>
-              <Route path="/" element={<EmptyChat />} />
-              <Route path="/user/:userId" element={<ChatWindow />} />
-            </Routes>
-          </div>
+        
+
+        {/* Sidebar */}
+        <div className="w-full md:w-1/4 lg:w-1/4 border-b md:border-r md:border-b-0 border-gray-200 dark:border-gray-700">
+          <Sidebar onLogout={handleLogout} />
         </div>
+
+        {/* Main Chat Area */}
+        <div className="flex-1 h-[calc(100vh-64px)] md:h-screen overflow-hidden">
+          <Routes>
+            <Route path="/" element={<EmptyChat />} />
+            <Route path="/user/:userId" element={<ChatWindow />} />
+          </Routes>
+        </div>
+        
       </div>
     </ChatProvider>
   );
