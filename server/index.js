@@ -20,7 +20,11 @@ const app = express();
 const server = http.createServer(app);
 
 // Middleware
-app.use(cors());
+app.use(cors({
+  origin: 'https://forever-lovat.vercel.app', // Allow requests from your frontend URL
+  methods: ['GET', 'POST'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
 app.use(express.json());
 
 // Database connection
@@ -37,7 +41,7 @@ const connectDB = async () => {
 // Socket.io setup
 const io = new Server(server, {
   cors: {
-    origin: '*',
+    origin: 'https://forever-lovat.vercel.app', // Allow connections from your frontend URL
     methods: ['GET', 'POST']
   }
 });

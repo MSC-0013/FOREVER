@@ -34,16 +34,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    // Check if token exists and is valid
     const verifyToken = async () => {
       const storedToken = localStorage.getItem('token');
       
       if (storedToken) {
         try {
-          // Decode the token
           const decoded = jwtDecode<User & { exp: number }>(storedToken);
-          
-          // Check if token is expired
           const currentTime = Date.now() / 1000;
           if (decoded.exp < currentTime) {
             localStorage.removeItem('token');
@@ -52,8 +48,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           } else {
             setUser({ id: decoded.id, username: decoded.username });
             setToken(storedToken);
-            
-            // Set auth header for all requests
             axios.defaults.headers.common['Authorization'] = `Bearer ${storedToken}`;
           }
         } catch (error) {
@@ -62,7 +56,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           setUser(null);
         }
       }
-      
       setLoading(false);
     };
 
@@ -73,19 +66,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       setLoading(true);
       setError(null);
-      
-      const response = await axios.post('http://localhost:5000/api/auth/login', {
+
+      const response = await axios.post(`${process.env.REACT_APP_BACKEND_URL}/api/auth/login`, {
         username,
         password
       });
-      
+
       const { token: newToken, user: userData } = response.data;
-      
       localStorage.setItem('token', newToken);
       setToken(newToken);
       setUser(userData);
-      
-      // Set auth header for all requests
       axios.defaults.headers.common['Authorization'] = `Bearer ${newToken}`;
     } catch (error) {
       if (axios.isAxiosError(error) && error.response) {
@@ -103,12 +93,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       setLoading(true);
       setError(null);
-      
-      await axios.post('http://localhost:5000/api/auth/register', {
+
+      await axios.post(`${process.env.REACT_APP_BACKEND_URL}/api/auth/register`, {
         username,
         password
       });
-      
     } catch (error) {
       if (axios.isAxiosError(error) && error.response) {
         setError(error.response.data.message || 'Registration failed');
