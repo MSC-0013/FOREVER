@@ -176,7 +176,7 @@ This project is licensed under the MIT License.
 Feel free to fork and contribute!
 
 ✨ Author
-Developed with ❤️ by Your Name
+Developed with ❤️ by MSC
 
 yaml
 Copy
