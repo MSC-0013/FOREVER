@@ -4,7 +4,7 @@ import { useAuth } from './AuthContext';
 
 interface SocketContextType {
   socket: Socket | null;
-  isConnected: boolean;
+  isConnected: boolean; 
   onlineUsers: string[];
   typingUsers: Record<string, boolean>;
   startTyping: (recipientId: string) => void;
@@ -38,7 +38,7 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       return;
     }
 
-    const backendURL = process.env.REACT_APP_BACKEND_URL ;
+    const backendURL = process.env.REACT_APP_BACKEND_URL;
 
     // Initialize socket connection
     const newSocket = io(backendURL, {
