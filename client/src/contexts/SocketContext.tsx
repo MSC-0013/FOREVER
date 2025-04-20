@@ -38,16 +38,18 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       return;
     }
 
+    const backendURL = process.env.REACT_APP_BACKEND_URL ;
+
     // Initialize socket connection
-    const newSocket = io('http://localhost:5000', {
+    const newSocket = io(backendURL, {
       auth: {
-        token
-      }
+        token,
+      },
     });
 
     setSocket(newSocket);
 
-    // Socket event handlers
+    // Event listeners
     newSocket.on('connect', () => {
       setIsConnected(true);
     });
@@ -68,7 +70,7 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       setTypingUsers(prev => ({ ...prev, [userId]: false }));
     });
 
-    // Cleanup on unmount
+    // Cleanup
     return () => {
       newSocket.disconnect();
     };
@@ -87,14 +89,14 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   };
 
   return (
-    <SocketContext.Provider 
-      value={{ 
-        socket, 
-        isConnected, 
-        onlineUsers, 
+    <SocketContext.Provider
+      value={{
+        socket,
+        isConnected,
+        onlineUsers,
         typingUsers,
         startTyping,
-        stopTyping
+        stopTyping,
       }}
     >
       {children}

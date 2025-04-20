@@ -6,14 +6,21 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import jwt from 'jsonwebtoken';
 
+// Load environment variables
+dotenv.config();
+
+const {
+  MONGO_URI,
+  PORT = 5000,
+  JWT_SECRET,
+  CLIENT_URL
+} = process.env;
+
 // Import routes
 import authRoutes from './routes/auth.js';
 import messageRoutes from './routes/messages.js';
 import contactRoutes from './routes/contacts.js';
 import userRoutes from './routes/users.js';
-
-// Load environment variables
-dotenv.config();
 
 // Create Express app
 const app = express();
@@ -21,16 +28,17 @@ const server = http.createServer(app);
 
 // Middleware
 app.use(cors({
-  origin: 'https://forever-lovat.vercel.app', // Allow requests from your frontend URL
+  origin: CLIENT_URL,
   methods: ['GET', 'POST'],
+  credentials: true,
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
 app.use(express.json());
 
-// Database connection
+// Connect to MongoDB
 const connectDB = async () => {
   try {
-    await mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/chat-app');
+    await mongoose.connect(MONGO_URI);
     console.log('MongoDB connected successfully');
   } catch (error) {
     console.error('MongoDB connection error:', error);
@@ -38,24 +46,23 @@ const connectDB = async () => {
   }
 };
 
-// Socket.io setup
+// Socket.IO setup
 const io = new Server(server, {
   cors: {
-    origin: 'https://forever-lovat.vercel.app', // Allow connections from your frontend URL
-    methods: ['GET', 'POST']
+    origin: CLIENT_URL,
+    methods: ['GET', 'POST'],
+    credentials: true
   }
 });
 
-// Socket middleware for authentication
+// Authenticate socket with JWT
 io.use((socket, next) => {
   const token = socket.handshake.auth.token;
-  
-  if (!token) {
-    return next(new Error('Authentication error'));
-  }
+
+  if (!token) return next(new Error('Authentication error'));
 
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your_jwt_secret');
+    const decoded = jwt.verify(token, JWT_SECRET);
     socket.userId = decoded.id;
     next();
   } catch (error) {
@@ -63,79 +70,55 @@ io.use((socket, next) => {
   }
 });
 
-// Connected users
+// Track connected users
 const connectedUsers = new Map();
 
-// Socket.io connection
 io.on('connection', (socket) => {
   console.log(`User connected: ${socket.userId}`);
-  
-  // Add user to connected users
   connectedUsers.set(socket.userId, socket.id);
-  
-  // Broadcast online users
   io.emit('online_users', Array.from(connectedUsers.keys()));
 
-  // Handle sending messages
   socket.on('send_message', (messageData) => {
     const recipientSocketId = connectedUsers.get(messageData.recipient);
-    
     if (recipientSocketId) {
-      // Send to recipient
       io.to(recipientSocketId).emit('new_message', messageData);
     }
-    
-    // Also send back to sender to ensure delivery
     socket.emit('new_message', messageData);
   });
 
-  // Handle typing indicators
   socket.on('typing', ({ recipientId }) => {
     const recipientSocketId = connectedUsers.get(recipientId);
-    
     if (recipientSocketId) {
-      io.to(recipientSocketId).emit('user_typing', {
-        userId: socket.userId
-      });
+      io.to(recipientSocketId).emit('user_typing', { userId: socket.userId });
     }
   });
 
   socket.on('stop_typing', ({ recipientId }) => {
     const recipientSocketId = connectedUsers.get(recipientId);
-    
     if (recipientSocketId) {
-      io.to(recipientSocketId).emit('user_stop_typing', {
-        userId: socket.userId
-      });
+      io.to(recipientSocketId).emit('user_stop_typing', { userId: socket.userId });
     }
   });
 
-  // Handle disconnection
   socket.on('disconnect', () => {
     console.log(`User disconnected: ${socket.userId}`);
-    
-    // Remove user from connected users
     connectedUsers.delete(socket.userId);
-    
-    // Broadcast online users
     io.emit('online_users', Array.from(connectedUsers.keys()));
   });
 });
 
-// Routes
+// API Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/messages', messageRoutes);
 app.use('/api/contacts', contactRoutes);
 app.use('/api/users', userRoutes);
 
-// Default route
+// Health check route
 app.get('/', (req, res) => {
   res.send('Chat API is running');
 });
 
-// Start server
-const PORT = process.env.PORT || 5000;
-
+// Start the server
 server.listen(PORT, async () => {
   await connectDB();
   console.log(`Server running on port ${PORT}`);
