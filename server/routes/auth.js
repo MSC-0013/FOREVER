@@ -8,7 +8,12 @@ const router = express.Router();
 // Register a new user
 router.post('/register', async (req, res) => {
   try {
+    console.log('Register request:', req.body);
     const { username, password } = req.body;
+    
+    if (!username || !password) {
+      return res.status(400).json({ message: 'Username and password are required' });
+    }
     
     // Check if username is taken
     const existingUser = await User.findOne({ username });
@@ -27,20 +32,26 @@ router.post('/register', async (req, res) => {
     });
     
     await newUser.save();
+    console.log('User registered successfully:', username);
     
     res.status(201).json({ message: 'User registered successfully' });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Server error' });
+    console.error('Registration error:', error);
+    res.status(500).json({ message: 'Server error during registration' });
   }
 });
 
 // Login route
 router.post('/login', async (req, res) => {
-  const { username, password } = req.body; // Use username instead of email
-
   try {
-    const user = await User.findOne({ username }); // Query by username
+    console.log('Login request:', req.body);
+    const { username, password } = req.body;
+
+    if (!username || !password) {
+      return res.status(400).json({ message: 'Username and password are required' });
+    }
+
+    const user = await User.findOne({ username });
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }
@@ -51,11 +62,12 @@ router.post('/login', async (req, res) => {
     }
 
     const token = jwt.sign({ id: user._id, username: user.username }, process.env.JWT_SECRET, { expiresIn: '1h' });
+    console.log('User logged in successfully:', username);
 
     res.status(200).json({ token, user: { id: user._id, username: user.username } });
   } catch (error) {
     console.error('Login error:', error);
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ message: 'Server error during login' });
   }
 });
 

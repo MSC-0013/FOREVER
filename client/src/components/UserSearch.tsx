@@ -50,7 +50,7 @@ const UserSearch: React.FC<UserSearchProps> = ({ onClose }) => {
     try {
       setIsSearching(true);
       setError(null);
-      const response = await axios.get(`${API_URL}/api/users/search?username=${searchQuery}`);
+      const response = await axios.get(`/api/users/search?username=${searchQuery}`);
       setSearchResults(response.data);
     } catch (error) {
       setError('Failed to search users');

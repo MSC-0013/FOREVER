@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import axios from 'axios';
+import axiosInstance from '../config';
 import { jwtDecode } from 'jwt-decode';
-import { API_URL } from '../config';
+import { AxiosError } from 'axios';
 
 interface User {
   id: string;
@@ -52,7 +52,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           } else {
             setUser({ id: decoded.id, username: decoded.username });
             setToken(storedToken);
-            axios.defaults.headers.common['Authorization'] = `Bearer ${storedToken}`;
+            axiosInstance.defaults.headers.common['Authorization'] = `Bearer ${storedToken}`;
           }
         } catch (error) {
           localStorage.removeItem('token');
@@ -71,7 +71,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setLoading(true);
       setError(null);
 
-      const response = await axios.post(`${API_URL}/api/auth/login`, {
+      const response = await axiosInstance.post('/api/auth/login', {
         username,
         password
       });
@@ -80,9 +80,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       localStorage.setItem('token', newToken);
       setToken(newToken);
       setUser(userData);
-      axios.defaults.headers.common['Authorization'] = `Bearer ${newToken}`;
     } catch (error) {
-      if (axios.isAxiosError(error) && error.response) {
+      if (error instanceof AxiosError && error.response) {
         setError(error.response.data.message || 'Login failed');
       } else {
         setError('Login failed. Please try again.');
@@ -98,12 +97,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setLoading(true);
       setError(null);
 
-      await axios.post(`${API_URL}/api/auth/register`, {
+      await axiosInstance.post('/api/auth/register', {
         username,
         password
       });
     } catch (error) {
-      if (axios.isAxiosError(error) && error.response) {
+      if (error instanceof AxiosError && error.response) {
         setError(error.response.data.message || 'Registration failed');
       } else {
         setError('Registration failed. Please try again.');
@@ -118,7 +117,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     localStorage.removeItem('token');
     setToken(null);
     setUser(null);
-    delete axios.defaults.headers.common['Authorization'];
+    delete axiosInstance.defaults.headers.common['Authorization'];
   };
 
   return (

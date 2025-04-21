@@ -21,12 +21,31 @@ const server = http.createServer(app);
 
 // Middleware
 app.use(cors({
-  origin: 'https://forever-lovat.vercel.app',
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
-  credentials: true
+  origin: ['https://forever-lovat.vercel.app', 'http://localhost:3000'],
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+  credentials: true,
+  preflightContinue: false,
+  optionsSuccessStatus: 204
 }));
+
+// Handle preflight requests
+app.options('*', cors());
+
+// Add request logging middleware
+app.use((req, res, next) => {
+  console.log(`${req.method} ${req.url}`);
+  next();
+});
+
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+// Error handling middleware
+app.use((err, req, res, next) => {
+  console.error('Error:', err.stack);
+  res.status(500).json({ message: 'Something went wrong!' });
+});
 
 // MongoDB connection
 const connectDB = async () => {
@@ -46,8 +65,9 @@ const connectDB = async () => {
 // Socket.IO setup
 const io = new Server(server, {
   cors: {
-    origin: 'https://forever-lovat.vercel.app',
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    origin: ['https://forever-lovat.vercel.app', 'http://localhost:3000'],
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
     credentials: true
   }
 });
@@ -116,6 +136,12 @@ app.use('/api/users', userRoutes);
 // Default route
 app.get('/', (req, res) => {
   res.send('✅ Chat API is running');
+});
+
+// 404 handler
+app.use((req, res) => {
+  console.log('404 - Route not found:', req.method, req.url);
+  res.status(404).json({ message: 'Route not found' });
 });
 
 // Start server
