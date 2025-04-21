@@ -138,14 +138,20 @@ app.get('/', (req, res) => {
   res.send('API is running');
 });
 
-// 404 handler
+// Error handling middleware
+app.use((err, req, res, next) => {
+  console.error('Error:', err.stack);
+  res.status(500).json({ message: 'Something went wrong!' });
+});
+
+// 404 handler - must be last
 app.use((req, res) => {
   res.status(404).json({ message: 'Route not found' });
 });
 
 // Start server
 const PORT = process.env.PORT || 5000;
-const HOST = '0.0.0.0'; // Listen on all network interfaces
+const HOST = '0.0.0.0';
 
 server.listen(PORT, HOST, async () => {
   await connectDB();
