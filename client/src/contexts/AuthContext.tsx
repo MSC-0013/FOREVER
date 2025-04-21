@@ -15,6 +15,9 @@ interface AuthContextType {
   login: (username: string, password: string) => Promise<void>;
   register: (username: string, password: string) => Promise<void>;
   logout: () => void;
+  setLoading: React.Dispatch<React.SetStateAction<boolean>>; // Added to match your use of setLoading
+  setToken: React.Dispatch<React.SetStateAction<string | null>>; // Added to match your use of setToken
+  setUser: React.Dispatch<React.SetStateAction<User | null>>; // Added to match your use of setUser
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -67,7 +70,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setLoading(true);
       setError(null);
 
-      const response = await axios.post(`${process.env.REACT_APP_BACKEND_URL}/api/auth/login`, {
+      const response = await axios.post(`${process.env.SERVER_URL}/api/auth/login`, {
         username,
         password
       });
@@ -94,7 +97,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setLoading(true);
       setError(null);
 
-      await axios.post(`${process.env.REACT_APP_BACKEND_URL}/api/auth/register`, {
+      await axios.post(`${process.env.SERVER_URL}/api/auth/register`, {
         username,
         password
       });
@@ -118,7 +121,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, error, token, login, register, logout }}>
+    <AuthContext.Provider value={{ user, loading, error, token, login, register, logout, setLoading, setToken, setUser }}>
       {children}
     </AuthContext.Provider>
   );

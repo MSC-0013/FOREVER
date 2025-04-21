@@ -78,7 +78,7 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       setLoadingContacts(true);
       setError(null);
-      const response = await axios.get<Contact[]>(`${process.env.REACT_APP_BACKEND_URL}/api/contacts`);
+      const response = await axios.get<Contact[]>(`${process.env.SERVER_URL}/api/contacts`);
       setContacts(response.data);
     } catch (err) {
       setError('Failed to fetch contacts');
@@ -94,7 +94,7 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       setLoadingMessages(true);
       setError(null);
-      const response = await axios.get<Message[]>(`${process.env.REACT_APP_BACKEND_URL}/api/messages/${contactId}`);
+      const response = await axios.get<Message[]>(`${process.env.SERVER_URL}/api/messages/${contactId}`);
       setMessages(prev => ({
         ...prev,
         [contactId]: response.data,
@@ -111,7 +111,7 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (!user || !socket) return;
 
     try {
-      const response = await axios.post<Message>(`${process.env.REACT_APP_BACKEND_URL}/api/messages`, {
+      const response = await axios.post<Message>(`${process.env.SERVER_URL}/api/messages`, {
         content,
         recipientId,
       });
@@ -138,7 +138,7 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     try {
       setError(null);
-      const response = await axios.post<Contact>(`${process.env.REACT_APP_BACKEND_URL}/api/contacts`, {
+      const response = await axios.post<Contact>(`${process.env.SERVER_URL}/api/contacts`, {
         contactId: userId,
       });
 

@@ -21,7 +21,7 @@ const server = http.createServer(app);
 
 // Middleware
 app.use(cors({
-  origin: process.env.CLIENT_URL, // Allow requests from your frontend URL
+  origin: process.env.CLIENT_URL || 'http://localhost:5000', // Adjust this to your client URL
   methods: ['GET', 'POST'],
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
@@ -41,7 +41,7 @@ const connectDB = async () => {
 // Socket.io setup
 const io = new Server(server, {
   cors: {
-    origin: process.env.CLIENT_URL, // Allow connections from your frontend URL
+    origin: process.env.CLIENT_URL || 'http://localhost:5000', 
     methods: ['GET', 'POST']
   }
 });
@@ -134,7 +134,7 @@ app.get('/', (req, res) => {
 });
 
 // Start server
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 5001;
 
 server.listen(PORT, async () => {
   await connectDB();

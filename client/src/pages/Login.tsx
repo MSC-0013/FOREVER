@@ -3,13 +3,14 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { MessageCircleHeart } from 'lucide-react';
 import { FaEye, FaEyeSlash } from 'react-icons/fa';
+import axios from 'axios';
 
 const Login: React.FC = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [formError, setFormError] = useState('');
-  const { login, loading, error } = useAuth();
+  const { loading, error, setLoading, setToken, setUser } = useAuth();
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -27,16 +28,45 @@ const Login: React.FC = () => {
     }
 
     try {
-      await login(username, password);
+      await handleLogin(username, password);
       navigate('/chat');
     } catch (error) {
-      // handled by auth context
+      // Error is already handled in handleLogin
+    }
+  };
+
+  const handleLogin = async (username: string, password: string) => {
+    try {
+      setLoading(true);
+      // Handle error state locally or remove this line if unnecessary
+
+      const response = await axios.post(`${process.env.SERVER_URL}/api/auth/login`, {
+        username,
+        password,
+      });
+
+      const { token: newToken, user: userData } = response.data;
+
+      localStorage.setItem('token', newToken);
+      setToken(newToken);
+      setUser(userData);
+      axios.defaults.headers.common['Authorization'] = `Bearer ${newToken}`;
+    } catch (error) {
+      if (axios.isAxiosError(error) && error.response) {
+        setFormError(error.response.data.message || 'Login failed');
+      } else {
+        setFormError('Login failed. Please try again.');
+      }
+      throw error;
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-emerald-600 via-green-500 to-lime-400 px-4 py-10 sm:px-6 lg:px-8">
       <div className="w-full max-w-md bg-white rounded-3xl shadow-2xl overflow-hidden">
+        
         {/* Header */}
         <div className="flex items-center justify-center gap-3 bg-white/10 backdrop-blur-md border-b border-white/20 p-6">
           <div className="bg-white p-3 rounded-full shadow-md">
@@ -45,7 +75,7 @@ const Login: React.FC = () => {
           <h1 className="text-3xl font-bold tracking-wide text-green-700">Forever</h1>
         </div>
 
-        {/* Form */}
+        {/* Form Area */}
         <div className="px-9 py-5 sm:px-10">
           <h2 className="text-xl font-semibold text-gray-800 text-center mb-8">Welcome Back 👋</h2>
 
@@ -56,9 +86,10 @@ const Login: React.FC = () => {
           )}
 
           <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Username */}
+            {/* Username Input */}
             <div>
               <label htmlFor="username" className="block text-sm font-medium text-gray-700 mb-1">
+                Username
               </label>
               <input
                 id="username"
@@ -66,14 +97,14 @@ const Login: React.FC = () => {
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:outline-none transition"
-                placeholder="Username "
+                placeholder="Enter your username"
               />
             </div>
 
-            {/* Password */}
+            {/* Password Input */}
             <div>
               <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
-                
+                Password
               </label>
               <div className="relative">
                 <input
@@ -82,7 +113,7 @@ const Login: React.FC = () => {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   className="w-full px-4 py-3 pr-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:outline-none transition"
-                  placeholder="Password"
+                  placeholder="Enter your password"
                 />
                 <button
                   type="button"
@@ -95,7 +126,7 @@ const Login: React.FC = () => {
               </div>
             </div>
 
-            {/* Submit */}
+            {/* Submit Button */}
             <button
               type="submit"
               disabled={loading}
@@ -110,7 +141,7 @@ const Login: React.FC = () => {
             </button>
           </form>
 
-          {/* Bottom link */}
+          {/* Bottom Link */}
           <p className="mt-6 text-sm text-center text-gray-600">
             Don't have an account?{' '}
             <Link to="/register" className="text-green-600 hover:text-green-700 font-medium">

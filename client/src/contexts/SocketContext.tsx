@@ -38,7 +38,7 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       return;
     }
 
-    const backendURL = process.env.REACT_APP_BACKEND_URL;
+    const backendURL = process.env.SERVER_URL || 'http://localhost:5000'; // Replace with your backend URL
 
     // Initialize socket connection
     const newSocket = io(backendURL, {
