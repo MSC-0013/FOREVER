@@ -127,7 +127,7 @@ io.on('connection', (socket) => {
   });
 });
 
-// Routes
+// Mount routes with proper prefixes
 app.use('/api/auth', authRoutes);
 app.use('/api/messages', messageRoutes);
 app.use('/api/contacts', contactRoutes);
@@ -144,8 +144,10 @@ app.use((req, res) => {
 });
 
 // Start server
-const PORT = process.env.PORT || 5000; // Match the .env PORT
-server.listen(PORT, async () => {
+const PORT = process.env.PORT || 5000;
+const HOST = '0.0.0.0'; // Listen on all network interfaces
+
+server.listen(PORT, HOST, async () => {
   await connectDB();
-  console.log(`🚀 Server running on http://localhost:${PORT}`);
+  console.log(`🚀 Server running on http://${HOST}:${PORT}`);
 });
