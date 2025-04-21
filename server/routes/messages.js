@@ -5,7 +5,7 @@ import { auth } from '../middleware/auth.js';
 const router = express.Router();
 
 // Get messages between current user and a specific user
-router.get('/:userId', auth, async (req, res) => {
+router.get('/user/:userId', auth, async (req, res) => {
   try {
     const messages = await Message.find({
       $or: [
