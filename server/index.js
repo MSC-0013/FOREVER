@@ -135,12 +135,11 @@ app.use('/api/users', userRoutes);
 
 // Default route
 app.get('/', (req, res) => {
-  res.send('✅ Chat API is running');
+  res.send('API is running');
 });
 
 // 404 handler
 app.use((req, res) => {
-  console.log('404 - Route not found:', req.method, req.url);
   res.status(404).json({ message: 'Route not found' });
 });
 
