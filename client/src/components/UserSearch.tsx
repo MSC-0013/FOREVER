@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import axios from 'axios';
 import { X, Search, UserPlus } from 'lucide-react';
 import { useChat } from '../contexts/ChatContext';
+import { API_URL } from '../config';
 
 interface UserSearchProps {
   onClose: () => void;
@@ -49,7 +50,7 @@ const UserSearch: React.FC<UserSearchProps> = ({ onClose }) => {
     try {
       setIsSearching(true);
       setError(null);
-      const response = await axios.get(`http://localhost:5000/api/users/search?username=${searchQuery}`);
+      const response = await axios.get(`${API_URL}/api/users/search?username=${searchQuery}`);
       setSearchResults(response.data);
     } catch (error) {
       setError('Failed to search users');

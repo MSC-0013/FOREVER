@@ -21,9 +21,10 @@ const server = http.createServer(app);
 
 // Middleware
 app.use(cors({
-  origin: process.env.CLIENT_URL || 'http://localhost:3000', // Adjust to match frontend port
-  methods: ['GET', 'POST'],
-  allowedHeaders: ['Content-Type', 'Authorization']
+  origin: 'https://forever-lovat.vercel.app',
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true
 }));
 app.use(express.json());
 
@@ -37,15 +38,17 @@ const connectDB = async () => {
     console.log('✅ MongoDB connected successfully');
   } catch (error) {
     console.error('❌ MongoDB connection error:', error.message);
-    process.exit(1);
+    // Don't exit the process, just log the error
+    console.error('Continuing without database connection...');
   }
 };
 
 // Socket.IO setup
 const io = new Server(server, {
   cors: {
-    origin: process.env.CLIENT_URL || 'http://localhost:3000',
-    methods: ['GET', 'POST']
+    origin: 'https://forever-lovat.vercel.app',
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    credentials: true
   }
 });
 
@@ -116,7 +119,7 @@ app.get('/', (req, res) => {
 });
 
 // Start server
-const PORT = process.env.PORT || 5001;
+const PORT = process.env.PORT || 5000; // Match the .env PORT
 server.listen(PORT, async () => {
   await connectDB();
   console.log(`🚀 Server running on http://localhost:${PORT}`);

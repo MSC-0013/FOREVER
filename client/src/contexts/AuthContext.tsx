@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import axios from 'axios';
 import { jwtDecode } from 'jwt-decode';
+import { API_URL } from '../config';
 
 interface User {
   id: string;
@@ -70,7 +71,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setLoading(true);
       setError(null);
 
-      const response = await axios.post(`${process.env.SERVER_URL}/api/auth/login`, {
+      const response = await axios.post(`${API_URL}/api/auth/login`, {
         username,
         password
       });
@@ -97,7 +98,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setLoading(true);
       setError(null);
 
-      await axios.post(`${process.env.SERVER_URL}/api/auth/register`, {
+      await axios.post(`${API_URL}/api/auth/register`, {
         username,
         password
       });
